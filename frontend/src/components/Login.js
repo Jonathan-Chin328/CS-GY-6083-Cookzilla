@@ -70,7 +70,7 @@ const Login = () => {
   };
 
   if(AuthService.getCurrentUser()) {
-    return <Navigate to="/profile" replace={true} />
+    return <Navigate to="/profile" replace={true}/>
   }
 
   return (

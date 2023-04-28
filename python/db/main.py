@@ -6,16 +6,18 @@ import traceback
 class Database:
   __instance : mysql.connector.MySQLConnection = None
 
-  PersonTable = "Person"
   RecipeTable = "Recipe"
+  UserTable = "user"
+  RateSongTable = "rateSong"
 
   def __init__(self):
       if self.__instance is None or self.__instance.is_connected() == False:
         self.__instance = mysql.connector.connect(
+                port='8889',
                 host=os.environ['DB_HOST'],
                 user=os.environ['DB_USER_ID'],
                 password=os.environ['DB_USER_PASSWORD'],
-                database=os.environ['DB_NAME']
+                database=os.environ['DB_NAME'],
             )
   
   def query(self, queryString="", params=()):

@@ -173,7 +173,7 @@ const Register = () => {
                 />
               </div>
 
-              <div className="form-group">
+              {/* <div className="form-group">
                 <label htmlFor="email">Email</label>
                 <Input
                   type="text"
@@ -183,7 +183,7 @@ const Register = () => {
                   onChange={onChangeEmail}
                   validations={[required, validEmail]}
                 />
-              </div>
+              </div> */}
 
               <div className="form-group">
                 <label htmlFor="password">Password</label>
@@ -221,7 +221,7 @@ const Register = () => {
                 />
               </div>
 
-              <div className="form-group">
+              {/* <div className="form-group">
                 <label htmlFor="profile">Profile</label>
                 <Input
                   type="profile"
@@ -230,7 +230,7 @@ const Register = () => {
                   value={profile}
                   onChange={onChangeProfile}
                 />
-              </div>
+              </div> */}
 
               <div className="form-group">
                 <button className="btn btn-primary btn-block">Sign Up</button>

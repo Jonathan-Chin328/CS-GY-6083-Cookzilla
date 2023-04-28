@@ -33,8 +33,8 @@ class AuthService():
     try:
       passwordBytes = user.password.encode('utf-8')
       hashedPassword = bcrypt.hashpw(passwordBytes, bcrypt.gensalt())
-      _ = db.query(("INSERT into "+ db.PersonTable +" (userName, password, fName, lName, email, profile) values (%s,%s,%s,%s,%s,%s)"), [
-        user.userName, hashedPassword, user.firstName, user.lastName, user.email, user.profile
+      _ = db.query(("INSERT into "+ db.UserTable +" (userName, password, fName, lName) values (%s,%s,%s,%s)"), [
+        user.userName, hashedPassword, user.firstName, user.lastName
       ])
       return {
         **user.dict(exclude={'password'}),
@@ -49,7 +49,7 @@ class AuthService():
   def login(self, loginData: LoginForm):
     db = self.Database
     try:
-      queryResult = db.query(("SELECT userName, email, profile, fName, lName, password FROM "+db.PersonTable+" where userName = %s"), [loginData.userName])
+      queryResult = db.query(("SELECT username, password, fName, lName, lastlogin, nickname FROM "+db.UserTable+" where userName = %s"), [loginData.userName])
       if len(queryResult['result']) != 1:
         raise userNotFound.UserNotFound()
       user = queryResult['result'][0]
@@ -86,7 +86,7 @@ class AuthService():
     db = self.Database
     try:
       queryResult = db.query(
-        ("SELECT userName, email, profile, fName, lName FROM "+db.PersonTable+" where userName = %s"),
+        ("SELECT username, fName, lName FROM "+db.UserTable+" where userName = %s"),
         [userName]
       )
       if (len(queryResult['result']) != 1):

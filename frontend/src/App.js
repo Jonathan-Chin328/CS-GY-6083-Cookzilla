@@ -8,6 +8,9 @@ import AuthService from "./services/auth.service";
 import Login from "./components/Login";
 import Register from "./components/Register";
 import Profile from "./components/Profile";
+import HomePage from "./components/Homepage";
+import SongPage from "./components/SongPage";
+import AlbumPage from "./components/AlbumPage";
 
 import EventBus from "./common/EventBus";
 
@@ -38,12 +41,12 @@ const App = () => {
   return (
     <div>
       <nav className="navbar navbar-expand navbar-dark bg-dark">
-        <Link to={"/"} className="navbar-brand">
+        <Link to={"/HomePage"} className="navbar-brand">
           Cookzilla
         </Link>
         <div className="navbar-nav mr-auto">
           <li className="nav-item">
-            <Link to={"/"} className="nav-link">
+            <Link to={"/HomePage"} className="nav-link">
               Home
             </Link>
           </li>
@@ -82,12 +85,14 @@ const App = () => {
       <div className="container mt-3">
         <Routes>
           <Route path="/" element={<Login />}/>
+          <Route path="/HomePage" element={<HomePage />}/>
           <Route path="/login" element={<Login />}/>
           <Route path="/register" element={<Register />}/>
           <Route path="/profile" element={<Profile/>} />
+          <Route path="/song/:songID" element={<SongPage />} />
+          <Route path="/album/:albumID" element={<AlbumPage />} />
         </Routes>
       </div>
-
     </div>
   );
 };

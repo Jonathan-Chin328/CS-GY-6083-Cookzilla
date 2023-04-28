@@ -30,3 +30,211 @@ label {
   -webkit-border-radius: 50%;
   border-radius: 50%;
 }
+
+.no-list {
+  color: #888;
+}
+
+/* CSS for SongList component */
+.song-list {
+  padding: 20px;
+}
+
+.song-list ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.song-list li {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid #e1e1e1;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.song-list li:hover {
+  background-color: #f7f7f7;
+}
+
+.song-list li:last-child {
+  border-bottom: none;
+}
+
+.song-list p {
+  margin: 0;
+  color: #888;
+}
+
+/* CSS for SongItem component */
+.song-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 16px;
+  width: 100%;
+}
+
+.song-item img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  margin-right: 16px;
+}
+
+.song-info {
+  flex: 1;
+}
+
+.title-artist-container {
+  display: flex;
+  flex-direction: column;
+  flex: 2;
+}
+
+.song-item h3 {
+  font-size: 18px;
+  margin: 0;
+  flex: 1;
+}
+
+.song-item p {
+  font-size: 14px;
+  color: #777777;
+  margin: 0;
+  flex: 1;
+}
+
+.song-item .album-link {
+  color: #1db954;
+  font-size: 14px;
+  margin-top: 8px;
+  flex: 1;
+}
+
+.song-item-add-btn {
+  padding: 8px 16px;
+  background-color: #1fbf57;
+  color: #ffffff;
+  border: none;
+  border-radius: 50px;
+  font-size: 14px;
+  cursor: pointer;
+  margin-left: auto;
+}
+
+.song-item-add-btn:hover {
+  background-color: #22a650;
+}
+
+.song-title {
+  color: rgb(8, 28, 66);
+  font-weight: bold;
+}
+
+.artist-name {
+  cursor: pointer;
+  transition: color 0.3s ease-in-out;
+}
+
+.artist-name:hover {
+  color: rgb(61, 131, 243); /* Update with your desired hover effect styles */
+}
+
+
+
+/* CSS for Homepage component */
+.homepage-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.homepage-container {
+  /* background-color: #1e2125; */
+  padding: 40px;
+  margin: 0 auto;
+  max-width: 800px;
+}
+
+.homepage-title {
+  font-size: 32px;
+  /* color: #ffffff; */
+  margin: 0 0 20px 0;
+}
+
+.homepage-search-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.custom-height {
+  height: 45px; /* set the desired height */
+}
+
+.homepage-filter-panel {
+  background-color: #7a7f85;
+  padding: 20px;
+  margin-top: 20px;
+}
+
+.homepage-filter-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-gap: 10px;
+  justify-items: center;
+  align-items: center;
+}
+
+.homepage-filter-label {
+  display: block;
+  font-size: 16px;
+  color: #ffffff;
+  margin-top: 0px;
+  margin-bottom: 1px;
+}
+
+.homepage-subtitle {
+  font-size: 24px;
+  /* color: #ffffff; */
+  margin: 40px 0 20px 0;
+}
+
+
+/* CSS for Profile component */
+.container {
+  max-width: 950px; /* Set the desired width here */
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+.custom-hr {
+  border: none;
+  height: 3px;
+  background-color: #ccc; /* Change color as needed */
+  margin: 20px 0; /* Add margin as needed */
+}
+
+.nav-link-custom {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #ccc;
+  height: 40px; /* Update the desired height */
+  height: 50px;
+}
+
+.list-group-item:hover {
+  background-color: #f7f7f7;
+  cursor: pointer;
+}
+
+
+
+
+
+
+

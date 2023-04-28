@@ -19,6 +19,7 @@ const register = (userName,
 };
 
 const login = (userName, password) => {
+  console.log(API_URL + "login")
   return axios
     .post(API_URL + "login", {
       userName,
@@ -28,7 +29,6 @@ const login = (userName, password) => {
       if (response.data.token) {
         localStorage.setItem("user", JSON.stringify(response.data));
       }
-
       return response.data;
     });
 };
