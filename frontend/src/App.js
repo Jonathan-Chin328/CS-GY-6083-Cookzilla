@@ -34,7 +34,7 @@ const App = () => {
   }, []);
 
   const logOut = () => {
-    AuthService.logout();
+    AuthService.logout(currentUser.username);
     setCurrentUser(undefined);
   };
 

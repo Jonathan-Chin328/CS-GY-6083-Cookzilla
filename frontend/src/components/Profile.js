@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Navigate } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import AuthService from "../services/auth.service";
 import UserService from "../services/user.service";
 import SongService from "../services/song.service";
 import SongList from "./SongList";
 import { UserModal, ArtistModal } from "./Modal";
+import { Heap } from 'heap-js';
+import moment from "moment";
 
 const Profile = () => {
   const currentUser = AuthService.getCurrentUser();
@@ -23,6 +25,8 @@ const Profile = () => {
   const [searchArtistQuery, setSearchArtistQuery] = useState('')
   const [artistList, setArtistList] = useState([])
   const [selectArtist, setSelectArtist] = useState("")
+  // notices
+  const [notices, setNotices] = useState([])
   // upload
   const [newTitle, setNewTitle] = useState('')
   const [newfname, setNewfname] = useState('')
@@ -39,6 +43,7 @@ const Profile = () => {
     } else if (selectComponent === "#following") {
       fetchFollowingList()
     }
+    fetchNotices()
   }, [selectComponent])
 
   useEffect(() => {
@@ -122,6 +127,69 @@ const Profile = () => {
       console.log(error);
     })
   }
+
+  // notices
+  const fetchNotices = () => {
+    UserService.getNotices(currentUser.username)
+    .then(response => {
+      let sortedNotices = sortNotices(response.data)
+      setNotices(sortedNotices)
+      console.log(sortedNotices)
+    })
+    .catch(error => {
+      console.log(error);
+    })
+  }
+
+  const sortNotices = (data) => {
+    // change all notice have the same key name
+    const newSong = data.newSong.map(notice => {
+      const { releaseDate, ...rest } = notice;
+      return { ...rest, date: releaseDate };
+    });
+    const newSongComment = data.newSongComment.map(notice => {
+      const { reviewDate, ...rest } = notice;
+      return { ...rest, date: reviewDate };
+    });
+    const newAlbumComment = data.newAlbumComment.map(notice => {
+      const { reviewDate, ...rest } = notice;
+      return { ...rest, date: reviewDate };
+    });
+    const newFriendStatus = data.newFriendStatus.map(notice => {
+      const { updatedAt, ...rest } = notice;
+      return { ...rest, date: updatedAt };
+    });
+    const notices = {
+      newSong: newSong,
+      newSongComment: newSongComment,
+      newAlbumComment: newAlbumComment,
+      newFriendStatus: newFriendStatus
+    }
+    // merge these notices by minheap algorithm
+    const sortedNotices = [];
+    const k = 4;
+    const heap = new Heap((a, b) => b.notice.date.localeCompare(a.notice.date));
+    for (let i = 0; i < k; i++) {
+      const noticeType = Object.keys(notices)[i];
+      if (notices[noticeType].length > 0) {
+        heap.push({ notice: notices[noticeType][0], type: noticeType });
+      }
+    }
+
+    // Repeat until heap is empty
+    while (!heap.isEmpty()) {
+      // Remove min element from heap and store it in sortedNotices array
+      const { notice, type } = heap.pop();
+      sortedNotices.push({ notice: notice, type: type });
+      // Insert next element from corresponding array if it exists
+      if (notices[type].length > 1) {
+        heap.push({ notice: notices[type][1], type: type });
+        notices[type] = notices[type].slice(1);
+      }
+    }
+    return sortedNotices
+  }
+
 
   // upload
   const handleUploadSong = () => {
@@ -208,16 +276,6 @@ const Profile = () => {
             </ul>
           </div>
         </div>
-        {selectUser && (
-          <>
-            <div className="modal-backdrop fade show"></div>
-            <UserModal
-              username={selectUser}
-              onClose={() => {setSelectUser("")}}
-              fetchFriendsList={fetchFriendsList}
-            />
-          </>
-        )}
       </div>
     );
   }
@@ -285,38 +343,54 @@ const Profile = () => {
       <div>
         <h4>Notices</h4>
         <div className="list-group mt-3">
-          <a className="list-group-item list-group-item-action flex-column align-items-start">
-            <div className="d-flex w-100 justify-content-between">
-              <h5 className="mb-1">New Review</h5>
-              <small className="text-muted">3 days ago</small>
-            </div>
-            <p className="mb-1">User review for the song title.</p>
-            <small className="text-muted">Donec id elit non mi porta.</small>
-          </a>
-          <a className="list-group-item list-group-item-action flex-column align-items-start">
-            <div className="d-flex w-100 justify-content-between">
-              <h5 className="mb-1">New Song</h5>
-              <small className="text-muted">3 days ago</small>
-            </div>
-            <p className="mb-1">Artist released new song.</p>
-            <small className="text-muted">Donec id elit non mi porta.</small>
-          </a>
-          <a className="list-group-item list-group-item-action flex-column align-items-start">
-            <div className="d-flex w-100 justify-content-between">
-              <h5 className="mb-1">Friend request </h5>
-              <small className="text-muted">3 days ago</small>
-            </div>
-            <div className="row">
-              <div className="col">
-                <p className="mb-1">User send you a friend request.</p>
-                <small className="text-muted">Donec id elit non mi porta.</small>
-              </div>
-              <div className="col d-flex justify-content-end">
-                <button type="button" className="btn btn-outline-danger mt-1 mb-2 mr-2">Refuse</button>
-                <button type="button" className="btn btn-outline-primary mt-1 mb-2 mr-2">Accept</button>
-              </div>
-            </div>
-          </a>
+          {notices.map(notice => {
+            switch(notice.type) {
+              case 'newSong': 
+                return (
+                  <Link to={`/song/${notice.notice.songID}`} key={notice.notice.date} className="list-group-item list-group-item-action flex-column align-items-start">
+                    <div className="d-flex w-100 justify-content-between">
+                      <h5 className="mb-1">New Song</h5>
+                      <small className="text-muted">{moment(notice.notice.date).fromNow()}</small>
+                    </div>
+                    <p className="mb-1">Artist released {notice.notice.title}.</p>
+                    <small className="text-muted">{' '}</small>
+                  </Link>
+              )
+              case 'newAlbumComment': 
+                return (
+                <Link to={`/song/${notice.notice.songID}`} key={notice.notice.date} className="list-group-item list-group-item-action flex-column align-items-start">
+                  <div className="d-flex w-100 justify-content-between">
+                    <h5 className="mb-1">New Review</h5>
+                    <small className="text-muted">{moment(notice.notice.date).fromNow()}</small>
+                  </div>
+                  <p className="mb-1">{notice.notice.username} review for album {notice.notice.albumID}.</p>
+                  <small className="text-muted">{notice.notice.reviewText.substring(0, 50) + (notice.notice.reviewText.length > 50 ? '...' : '')}</small>
+                </Link>
+              )
+              case 'newSongComment': 
+                return (
+                <Link to={`/song/${notice.notice.songID}`} key={notice.notice.date} className="list-group-item list-group-item-action flex-column align-items-start">
+                  <div className="d-flex w-100 justify-content-between">
+                    <h5 className="mb-1">New Review</h5>
+                    <small className="text-muted">{moment(notice.notice.date).fromNow()}</small>
+                  </div>
+                  <p className="mb-1">{notice.notice.username} review for song {notice.notice.songID}.</p>
+                  <small className="text-muted">{notice.notice.reviewText.substring(0, 50) + (notice.notice.reviewText.length > 50 ? '...' : '')}</small>
+                </Link>
+              )
+              case 'newFriendStatus': 
+                return (
+                <a className="list-group-item list-group-item-action flex-column align-items-start" key={notice.notice.date} onClick={() => {setSelectUser(notice.notice.requestSentBy)}}>
+                  <div className="d-flex w-100 justify-content-between">
+                    <h5 className="mb-1">Friend request </h5>
+                    <small className="text-muted">{moment(notice.notice.date).fromNow()}</small>
+                  </div>
+                  <p className="mb-1">{notice.notice.requestSentBy} send you a friend request.</p>
+                  <small className="text-muted">{' '}</small>
+                </a>
+              )
+            }
+          })}
         </div>
         <div className="form-row mt-5"></div>
       </div>
@@ -391,13 +465,13 @@ const Profile = () => {
             <strong>{currentUser.username}</strong> Profile
           </h3>
         </header>
-        <p>
+        {/* <p>
           <strong>Token:</strong> {currentUser.token.substring(0, 20)} ...{" "}
           {currentUser.token.substr(currentUser.token.length - 20)}
         </p>
         <p>
           <strong>userName: </strong> {currentUser.username}
-        </p>
+        </p> */}
         <hr className="custom-hr"></hr>
       </div>
       <div className="row mt-3">
@@ -416,7 +490,7 @@ const Profile = () => {
               </a>
               <a className="nav-link nav-link-custom d-flex justify-content-between align-items-center" href="#notices" onClick={() => {setSelectComponent("#notices")}}>
                 Notices
-                <span className="badge badge-primary badge-pill">3</span>
+                <span className="badge badge-primary badge-pill">{notices.length}</span>
               </a>
               <a className="nav-link nav-link-custom" href="#upload" onClick={() => {setSelectComponent("#upload")}}>
                 Upload
@@ -429,6 +503,16 @@ const Profile = () => {
           {renderHerfContent()}
         </div>
       </div>
+      {selectUser && (
+          <>
+            <div className="modal-backdrop fade show"></div>
+            <UserModal
+              username={selectUser}
+              onClose={() => {setSelectUser("")}}
+              fetchFriendsList={fetchFriendsList}
+            />
+          </>
+      )}
     </div>
   );
   

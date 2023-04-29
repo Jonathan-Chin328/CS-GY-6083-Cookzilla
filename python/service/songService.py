@@ -209,7 +209,8 @@ class SongService():
     try:
       query = ("SELECT *\
                 FROM Song\
-                WHERE releaseDate > (SELECT lastlogin FROM user WHERE username = '%s);")
+                WHERE releaseDate > (SELECT lastlogin FROM user WHERE username = %s)\
+                ORDER BY releaseDate DESC;")
       values = (username,)
       queryResult = db.query(query, values)
       return queryResult['result']
@@ -224,7 +225,8 @@ class SongService():
       query = ("SELECT *\
                 FROM ReviewSong\
                 WHERE reviewDate > (SELECT lastlogin FROM User WHERE username = %s)\
-                AND username <> %s;")
+                AND username <> %s\
+                ORDER BY reviewDate DESC;")
       values = (username, username,)
       queryResult = db.query(query, values)
       return queryResult['result']
@@ -239,7 +241,8 @@ class SongService():
       query = ("SELECT *\
                 FROM ReviewAlbum\
                 WHERE reviewDate > (SELECT lastlogin FROM User WHERE username = %s)\
-                AND username <> %s;")
+                AND username <> %s\
+                ORDER BY reviewDate DESC;")
       values = (username, username,)
       queryResult = db.query(query, values)
       return queryResult['result']

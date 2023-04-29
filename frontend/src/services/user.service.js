@@ -145,6 +145,16 @@ const updateFollowing = (username, artistID, followingStatus) => {
 	})
 }
 
+const getNotices = (username) => {
+  let params = {
+    username: username,
+  }
+  return axios.get(API_URL + "notices", {
+    headers: authHeader(),
+    params: params
+  }); 
+}
+
 const UserService = {
   getUserBoard,
   getUserPlaylists,
@@ -157,7 +167,8 @@ const UserService = {
   getFriendStatus,
   getFollowingStatus,
   updateFriend,
-  updateFollowing
+  updateFollowing,
+  getNotices
 };
 
 export default UserService;

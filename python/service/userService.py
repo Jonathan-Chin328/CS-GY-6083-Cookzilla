@@ -15,7 +15,7 @@ class UserService():
             query = ("UPDATE user\
                       SET lastlogin = CURRENT_TIMESTAMP\
                       WHERE username = %s;")
-            values = (data.userName,)
+            values = (data['userName'],)
             db.query(query, values)
         except Exception as e:
             logger.error("unable to update lastlogin")
@@ -269,7 +269,8 @@ class UserService():
             query = ("SELECT * FROM friend\
                       WHERE (user1 = %s OR user2 = %s)\
                       AND acceptStatus <> 'Not accepted'\
-                      AND updatedAt > (SELECT lastlogin FROM user WHERE username = %s)")
+                      AND updatedAt > (SELECT lastlogin FROM user WHERE username = %s)\
+                      ORDER BY updatedAt DESC;")
             values = (username, username, username,)
             queryResult = db.query(query, values)
             return queryResult['result']

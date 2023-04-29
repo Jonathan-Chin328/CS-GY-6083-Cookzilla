@@ -1,4 +1,5 @@
 import axios from "axios";
+import authHeader from "./auth-header";
 
 const API_URL = "http://localhost:3000/";
 
@@ -33,8 +34,17 @@ const login = (userName, password) => {
     });
 };
 
-const logout = () => {
-  localStorage.removeItem("user");
+const logout = (userName) => {
+  console.log(userName)
+  const data = {
+    userName: userName
+  }
+  axios.post(API_URL + "logout", data, { 
+		headers: authHeader()
+	})
+  .then((response) => {
+    localStorage.removeItem("user");
+  });
 };
 
 const getCurrentUser = () => {

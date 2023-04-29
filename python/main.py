@@ -53,8 +53,6 @@ async def signupHandler(registrationData: authService.UserRegistration):
 async def loginHandler(loginData: authService.LoginForm):
     try:
         user = AuthService.login(loginData)
-        # update lastlogin time of user
-        UserService.updateLastLogin(loginData)
         return user
     except Exception as e:
         if not isinstance(e, ExtendableError):
@@ -149,7 +147,7 @@ async def getArtist(request: Request):
 @app.middleware("http")
 async def AuthMiddleWare(request: Request, call_next):
     try:
-        if(request.url.path not in ['/signup', '/login', '/songs', '/song', '/rating', '/comments', '/album', '/user', '/artist', '/rate', '/comment', '/user_playlist', '/playlist', '/addPlaylist', "/addSongToPlaylist", "/friends", "/following", "/users", "/artists", "/friendStatus", "/followingStatus", "/updateFriend", "/updateFollowing", "/uploadSong"]):
+        if(request.url.path not in ['/signup', '/login', '/logout', '/songs', '/song', '/rating', '/comments', '/album', '/user', '/artist', '/rate', '/comment', '/user_playlist', '/playlist', '/addPlaylist', "/addSongToPlaylist", "/friends", "/following", "/users", "/artists", "/friendStatus", "/followingStatus", "/updateFriend", "/updateFollowing", "/uploadSong", "/notices"]):
         # if(request.url.path not in ['/signup', '/login', '/songs', '/song', '/rating', '/comments', '/album', '/user', '/artist']):
             authHeader = request.headers.get('Authorization')
             print('authHeader', authHeader)
@@ -174,6 +172,18 @@ async def AuthMiddleWare(request: Request, call_next):
             status_code=int(e.code),
             content={'info': e.info, 'code': int(e.code), 'name': e.name}
         )
+    
+@app.post("/logout")
+async def logoutHandler(request: Request):
+    try:
+        data = await request.json()
+        # update lastlogin time of user
+        UserService.updateLastLogin(data)
+        return {"message": "Log out succeed"}
+    except Exception as e:
+        if not isinstance(e, ExtendableError):
+            raise InternalServerError()
+        raise e
         
 @app.get("/user")
 async def getUser(request: Request):
@@ -367,11 +377,11 @@ async def updateFriend(request: Request):
 async def getNotices(request: Request):
     try:
         # find song comments after lastlogin
-        newSong = SongService.getNewSongComment(request)
+        newSong = SongService.getNewSong(request)
         # find album comments after lastlogin
         newAlbumComment = SongService.getNewAlbumComment(request)
         # find new song after lastlogin
-        newSongComment = SongService.getNewSong(request)
+        newSongComment = SongService.getNewSongComment(request)
         # find new friend status after lastlogin (not include not accept)
         newFriendStatus = UserService.geNewFriendStatus(request)
         notices = {

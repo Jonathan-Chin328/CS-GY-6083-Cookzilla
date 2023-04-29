@@ -9,7 +9,6 @@ const getHitSong = () => {
 }
 
 const getSongs = (params) => {
-  console.log(params)
   return axios.get(API_URL + "songs", { 
     headers: authHeader(),
     params: params

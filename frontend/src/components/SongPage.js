@@ -21,8 +21,8 @@ const SongPage = () => {
 
   useEffect(() => {
     fetchSong();
-		fetchSongRating()
-		fetchSongComments()
+	fetchSongRating()
+	fetchSongComments()
   }, [songID]);
 
 	// Fetch song details from backend API
