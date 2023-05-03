@@ -33,7 +33,9 @@ const AlbumApge = () => {
 		try {
 			const response = await SongService.getRatingByID(albumID, "album");
 			const data = response.data[0];
-			setAvgRating(parseFloat(data.avg_rating))
+			if (data) {
+				setAvgRating(parseFloat(data.avg_rating))
+			}
 		} catch (error) {
 			console.error("Failed to fetch song rating:", error);
 		}

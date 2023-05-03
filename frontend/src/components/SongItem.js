@@ -26,7 +26,9 @@ const SongItem = ({ songItem }) => {
   }, [songItem])
 
   useEffect(() => {
-    fetchPlaylists();
+    if (currentUser) {
+      fetchPlaylists();
+    }
   }, [showModal]);
 
   const getSong = (songID) => {
@@ -76,29 +78,34 @@ const SongItem = ({ songItem }) => {
   }
 
   const addToPlaylist = (event) => {
-    console.log('add to playlist')
-    if (selectedPlaylist !== '') {
-      SongService.addSongToPlaylist(selectedPlaylist.playlistID, songID)
-      setShowModal(!showModal);
-    } else {
-      // check newPlaylistName
-      if (newPlaylist !== '') {
-        // add new playlist
-        SongService.addPlaylist(currentUser.username, newPlaylist)
-          .then(response => {
-            // add to playlist if succeed
-            const data = response.data
-            if (data.playlistID === null) {
-              alert("The playlist already exist!")
-            } else {
-              SongService.addSongToPlaylist(data.playlistID, songID)
-              setShowModal(!showModal);
-            }
-          })
-          .catch(error => {
-            console.log(error)
-          })
+    if (currentUser) {
+      if (selectedPlaylist !== '') {
+        SongService.addSongToPlaylist(selectedPlaylist.playlistID, songID)
+        setShowModal(!showModal);
+      } else {
+        // check newPlaylistName
+        if (newPlaylist !== '') {
+          // add new playlist
+          SongService.addPlaylist(currentUser.username, newPlaylist)
+            .then(response => {
+              // add to playlist if succeed
+              const data = response.data
+              if (data.playlistID === null) {
+                alert("The playlist already exist!")
+              } else {
+                SongService.addSongToPlaylist(data.playlistID, songID)
+                setShowModal(!showModal);
+              }
+            })
+            .catch(error => {
+              console.log(error)
+            })
+        } else {
+          alert("Please enter the playlist name")
+        }
       }
+    } else {
+      alert("login to add playlist!")
     }
   }
 

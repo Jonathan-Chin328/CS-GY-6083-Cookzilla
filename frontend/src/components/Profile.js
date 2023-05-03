@@ -358,7 +358,7 @@ const Profile = () => {
               )
               case 'newAlbumComment': 
                 return (
-                <Link to={`/song/${notice.notice.songID}`} key={notice.notice.date} className="list-group-item list-group-item-action flex-column align-items-start">
+                <Link to={`/album/${notice.notice.albumID}`} key={notice.notice.date} className="list-group-item list-group-item-action flex-column align-items-start">
                   <div className="d-flex w-100 justify-content-between">
                     <h5 className="mb-1">New Review</h5>
                     <small className="text-muted">{moment(notice.notice.date).fromNow()}</small>

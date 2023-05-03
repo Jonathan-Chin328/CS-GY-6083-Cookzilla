@@ -42,7 +42,7 @@ const App = () => {
     <div>
       <nav className="navbar navbar-expand navbar-dark bg-dark">
         <Link to={"/HomePage"} className="navbar-brand">
-          Cookzilla
+          FatEar
         </Link>
         <div className="navbar-nav mr-auto">
           <li className="nav-item">

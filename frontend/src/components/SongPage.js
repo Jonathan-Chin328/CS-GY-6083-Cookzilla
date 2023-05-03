@@ -46,7 +46,9 @@ const SongPage = () => {
 			const response = await SongService.getRatingByID(songID, "song");
 			const data = response.data[0];
 			console.log(data)
-			setAvgRating(parseFloat(data.avg_rating))
+			if (data) {
+				setAvgRating(parseFloat(data.avg_rating))
+			}
 		} catch (error) {
 			console.error("Failed to fetch song rating:", error);
 		}

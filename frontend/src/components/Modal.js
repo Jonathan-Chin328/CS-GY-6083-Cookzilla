@@ -25,23 +25,29 @@ const UserModal = ({username, onClose, fetchFriendsList}) => {
 	}
 
 	const fetchFriendStatus = () => {
-		UserService.getFriendStatus(currentUser.username, username)
-		.then(response => {
-			if (response.data.length !== 0) {
-				setFriendStatus(response.data[0])
-			}
-		})
+		if (currentUser) {
+			UserService.getFriendStatus(currentUser.username, username)
+			.then(response => {
+				if (response.data.length !== 0) {
+					setFriendStatus(response.data[0])
+				}
+			})
+		}
 	}
 
 	const handleAddFriend = () => {
-		UserService.updateFriend(currentUser.username, username, friendStatus)
-		.then(response => {
-			fetchFriendsList()
-		})
-		.catch(error => {
-			console.log(error)
-		})
-		onClose()
+		if (currentUser) {
+			UserService.updateFriend(currentUser.username, username, friendStatus)
+			.then(response => {
+				fetchFriendsList()
+			})
+			.catch(error => {
+				console.log(error)
+			})
+			onClose()
+		} else {
+			alert("login to add friends!")
+		}
 	}
 
 	return (
@@ -76,7 +82,7 @@ const UserModal = ({username, onClose, fetchFriendsList}) => {
 					<div className="modal-footer">
 						<button type="button" className="btn btn-secondary" data-dismiss="modal" onClick={onClose}>Close</button>
 						<button onClick={handleAddFriend} type="button" className="btn btn-primary"
-										disabled={currentUser.username === username ? true : false}>
+										disabled={currentUser && currentUser.username === username ? true : false}>
 							{friendStatus.acceptStatus === 'Accepted'? "Unfriend" : 
 								friendStatus.acceptStatus === 'Pending' && friendStatus.requestSentBy !== currentUser.username
 									? "Accept" : "Add friend"
@@ -112,23 +118,29 @@ const ArtistModal = ({artistID, onClose, fetchFollowingList}) => {
 	}
 
 	const fetchFollowingStatus = () => {
-		UserService.getFollowingStatus(currentUser.username, artistID)
-		.then(response => {
-			if (response.data.length !== 0) {
-				setFollowingStatus(true)
-			}
-		})
+		if (currentUser) {
+			UserService.getFollowingStatus(currentUser.username, artistID)
+			.then(response => {
+				if (response.data.length !== 0) {
+					setFollowingStatus(true)
+				}
+			})
+		}
 	}
 
 	const handleFollowing = () => {
-		UserService.updateFollowing(currentUser.username, artistID, followingStatus)
-		.then(response => {
-			fetchFollowingList()
-		})
-		.catch(error => {
-			console.log(error)
-		})
-		onClose()
+		if (currentUser) {
+			UserService.updateFollowing(currentUser.username, artistID, followingStatus)
+			.then(response => {
+				fetchFollowingList()
+			})
+			.catch(error => {
+				console.log(error)
+			})
+			onClose()
+		} else {
+			alert("login to follow!")
+		}
 	}
 
 	return (
