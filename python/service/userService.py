@@ -20,7 +20,7 @@ class UserService():
         except Exception as e:
             logger.error("unable to update lastlogin")
             raise internalServerError()
-		
+
     def getUserPlaylist(self, request):
         db = self.Database
         username = request.query_params.get('username')
@@ -34,7 +34,7 @@ class UserService():
         except Exception as e:
             logger.error("unable to add comment")
             raise internalServerError()
-    
+
     def getSongsByPlaylist(self, request):
         db = self.Database
         playlistID = request.query_params.get('playlistID')
@@ -48,7 +48,7 @@ class UserService():
         except Exception as e:
             logger.error("unable to add comment")
             raise internalServerError()
-    
+
     def getPlaylistID(self, data):
         db = self.Database
         try:
@@ -61,7 +61,7 @@ class UserService():
         except Exception as e:
             logger.error("unable to get playlistID")
             raise internalServerError()
-    
+
     def addPlaylist(self, data):
         db = self.Database
         try:
@@ -77,7 +77,7 @@ class UserService():
         except Exception as e:
             logger.error("unable to add user playlist")
             raise internalServerError()
-    
+
     def addSongToPlaylist(self, data):
         db = self.Database
         try:
@@ -91,7 +91,7 @@ class UserService():
         except Exception as e:
             logger.error("unable to ad song to play list")
             raise internalServerError()
-        
+
     def getFriendsList(self, request):
         db = self.Database
         try:
@@ -107,7 +107,7 @@ class UserService():
         except Exception as e:
             logger.error("unable to get user friend list")
             raise internalServerError()
-        
+
     def getFollowingList(self, request):
         db = self.Database
         try:
@@ -122,7 +122,7 @@ class UserService():
         except Exception as e:
             logger.error("unable to add get user following list")
             raise internalServerError()
-        
+
     def getUserList(self, request):
         db = self.Database
         try:
@@ -138,7 +138,54 @@ class UserService():
         except Exception as e:
             logger.error("unable to get query user list")
             raise internalServerError()
-        
+
+    def getInterests(self, request):
+        db = self.Database
+        try:
+            username = request.query_params.get('username')
+            # query all friend
+            query = (
+                "select distinct user2 AS username from friend where user1 = %s and acceptStatus = 'Accepted'"
+            )
+            queryResult = db.query(query, [username])
+            query = (
+                "select distinct `follows` AS username from `follows` where `follower` = %s"
+            )
+            queryResult2 = db.query(query, [username])
+            # set user
+            targetUser = set()
+            for item in queryResult['result']:
+                targetUser.add(item['username'])
+            for item in queryResult2['result']:
+                targetUser.add(item['username'])
+            usernamedict = [{"username": i} for i in targetUser]
+            res = []
+            for item in usernamedict:
+                friend_username = item['username']
+                # query rate song
+                query = ("select songID, ratingDate from rateSong where username = %s and stars > 3 order by ratingDate desc")
+                rateSongResult = db.query(query, [friend_username])
+                res.append({
+                    "type": "songList",
+                    "username": friend_username,
+                    "list": rateSongResult['result']
+                })
+                # query post review
+                query = ("select reviewText, reviewDate, songID from reviewSong where username = %s order by reviewDate desc")
+                reviewSongResult = db.query(query, [friend_username])
+                for i in reviewSongResult['result']:
+                    res.append({
+                        "type": "review",
+                        "username": friend_username,
+                        "content": i['reviewText'],
+                        "songID": i['songID'],
+                        "date": i['reviewDate'],
+                    })
+            return res
+        except Exception as e:
+            logger.error("unable to get user interests")
+            raise internalServerError()
+
     def getArtistList(self, request):
         db = self.Database
         try:
@@ -154,7 +201,7 @@ class UserService():
         except Exception as e:
             logger.error("unable to get query artist list")
             raise internalServerError()
-        
+
     def getUser(self, request):
         db = self.Database
         try:
@@ -168,7 +215,7 @@ class UserService():
         except Exception as e:
             logger.error("unable to get user by username")
             raise internalServerError()
-        
+
     def getArtist(self, request):
         db = self.Database
         try:
@@ -182,14 +229,14 @@ class UserService():
         except Exception as e:
             logger.error("unable to get artist by artistID")
             raise internalServerError()
-        
+
     def getFriendStatus(self, request):
         db = self.Database
         try:
             username = request.query_params.get('username')
             friendName = request.query_params.get('friendName')
             query = ("SELECT *\
-                      FROM Friend\
+                      FROM friend\
                       WHERE (user1 = %s AND user2 = %s)\
                       OR (user1 = %s AND user2 = %s);")
             values = (username, friendName, friendName, username,)
@@ -198,7 +245,7 @@ class UserService():
         except Exception as e:
             logger.error("unable to get friend status")
             raise internalServerError()
-        
+
     def getFollowingStatus(self, request):
         db = self.Database
         try:
@@ -213,7 +260,7 @@ class UserService():
         except Exception as e:
             logger.error("unable to get following status")
             raise internalServerError()
-        
+
     def removeFriend(self, data):
         db = self.Database
         try:
@@ -223,7 +270,7 @@ class UserService():
         except Exception as e:
             logger.error("unable to add remove friend")
             raise internalServerError()
-    
+
     def updateFriend(self, data):
         db = self.Database
         try:
@@ -240,7 +287,7 @@ class UserService():
         except Exception as e:
             logger.error("unable to update friend")
             raise internalServerError()
-    
+
     def removeFollowing(self, data):
         db = self.Database
         try:
@@ -250,7 +297,7 @@ class UserService():
         except Exception as e:
             logger.error("unable to add remove following")
             raise internalServerError()
-    
+
     def updateFollowing(self, data):
         db = self.Database
         try:
@@ -261,7 +308,7 @@ class UserService():
         except Exception as e:
             logger.error("unable to update following")
             raise internalServerError()
-        
+
     def geNewFriendStatus(self, request):
         db = self.Database
         try:
@@ -269,11 +316,60 @@ class UserService():
             query = ("SELECT * FROM friend\
                       WHERE (user1 = %s OR user2 = %s)\
                       AND acceptStatus <> 'Not accepted'\
+                      AND NOT (requestSentBy = %s AND acceptStatus = 'Pending')\
                       AND updatedAt > (SELECT lastlogin FROM user WHERE username = %s)\
                       ORDER BY updatedAt DESC;")
-            values = (username, username, username,)
+            values = (username, username, username, username,)
             queryResult = db.query(query, values)
             return queryResult['result']
         except Exception as e:
             logger.error("unable to get new friend status")
+            raise internalServerError()
+
+    def getMyFollow(self, request):
+        db = self.Database
+        try:
+            username = request.query_params.get('username')
+            query = ("SELECT *\
+                              FROM follows\
+                              WHERE follower =%s;")
+            values = (username,)
+            queryResult = db.query(query, values)
+            queryResult = [{"username": x["follows"]} for x in queryResult['result']]
+            return queryResult
+        except Exception as e:
+            logger.error("unable to get myfollow")
+            raise internalServerError()
+
+    def getMyFollowStatus(self, request):
+        db = self.Database
+        try:
+            username = request.query_params.get('username')
+            friendName = request.query_params.get('friendName')
+            query = ("SELECT * FROM follows WHERE follower =%s AND follows = %s;")
+            values = (username, friendName,)
+            queryResult = db.query(query, values)
+            if len(queryResult["result"]) > 0:
+                return 1
+            return 0
+        except Exception as e:
+            logger.error("unable to get myfollow status")
+            raise internalServerError()
+
+
+    def updateMyFollow(self, data):
+        db = self.Database
+        try:
+            action = data["action"]
+            if action == 1:
+                query = ("INSERT INTO follows (follower, follows)\
+                          VALUES (%s, %s)")
+                values = (data['username'], data['friendName'],)
+                db.query(query, values)
+            else:
+                query = ("DELETE FROM follows WHERE follower = %s and follows = %s")
+                values = (data['username'], data['friendName'],)
+                db.query(query, values)
+        except Exception as e:
+            logger.error("unable to update myfollow")
             raise internalServerError()

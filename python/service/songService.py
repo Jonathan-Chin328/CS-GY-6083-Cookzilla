@@ -11,12 +11,22 @@ class SongService():
     self.Database = db
 
 
+  def getGenre(self):
+      db = self.Database
+      try:
+          query = ("SELECT distinct genre from songGenre")
+          queryResult = db.query(query)
+          return queryResult['result']
+      except Exception as e:
+          logger.error("unable to get genre")
+          raise internalServerError()
+
   def getSongs(self, request):
     db = self.Database
     params = request.query_params
     query = "select song.songID, AVG(rateSong.stars) AS avg_rating\
 							from song\
-							JOIN rateSong ON song.songID = rateSong.songID\
+							LEFT JOIN rateSong ON song.songID = rateSong.songID\
 							JOIN artistPerformsSong ON song.songID = artistPerformsSong.songID\
 							JOIN artist ON artistPerformsSong.artistID = artist.artistID\
 							JOIN songGenre ON song.songID = songGenre.songID\
@@ -31,9 +41,10 @@ class SongService():
     # filter genre
     if params.get('genre'):
       query += "AND songGenre.genre = \"{}\" ".format(params.get('genre'))
-    # filter rating 
-    query += "GROUP BY song.songID\
-              HAVING AVG(rateSong.stars) >= {} ".format(params.get('minRating'))
+    # filter rating
+    query += "GROUP BY song.songID "
+    if int(params.get('minRating', 0)):
+        query += " HAVING AVG(rateSong.stars) >= {} ".format(params.get('minRating', 0))
     # order with Lexicographic
     if params.get('searchQuery') != '':
       if params.get("searchType") == 'song':
@@ -41,18 +52,20 @@ class SongService():
       elif params.get("searchType") == 'artist':
         query += "ORDER BY avg_rating DESC "
       elif params.get("searchType") == 'album':
-        query += "ORDER BY avg_rating DESC " 
+        query += "ORDER BY avg_rating DESC "
       query += "LIMIT 10;"
     # order with rating
-    else:  
+    else:
       query += "ORDER BY avg_rating DESC\
                 LIMIT 10;"
     try:
+      print(query)
       queryResult = db.query((query))
+      print(queryResult)
       return queryResult['result']
     except Exception as e:
       logger.error("unable to get songs")
-      raise internalServerError()   
+      raise internalServerError()
 
   def getSong(self, request):
     db = self.Database
@@ -71,7 +84,7 @@ class SongService():
     except Exception as e:
       logger.error("unable to get song")
       raise internalServerError()
-    
+
   def getRatingBySongID(self, request):
     db = self.Database
     songID = request.query_params.get('ID')
@@ -86,7 +99,7 @@ class SongService():
     except Exception as e:
       logger.error("unable to get rating")
       raise internalServerError()
-    
+
   def getCommentsBySongID(self, request):
     db = self.Database
     songID = request.query_params.get('ID')
@@ -101,7 +114,7 @@ class SongService():
     except Exception as e:
       logger.error("unable to get comments")
       raise internalServerError()
-    
+
   def updateSongRating(self, data):
     db = self.Database
     try:
@@ -115,7 +128,7 @@ class SongService():
     except Exception as e:
       logger.error("unable to update rating")
       raise internalServerError()
-    
+
   def updateSongComment(self, data):
     db = self.Database
     try:
@@ -129,7 +142,7 @@ class SongService():
     except Exception as e:
       logger.error("unable to add comment")
       raise internalServerError()
-    
+
   # album part
   def getAlbum(self, request):
     db = self.Database
@@ -144,7 +157,7 @@ class SongService():
     except Exception as e:
       logger.error("unable to add comment")
       raise internalServerError()
-    
+
   def getRatingByAlbumID(self, request):
     db = self.Database
     albumID = request.query_params.get('ID')
@@ -159,7 +172,7 @@ class SongService():
     except Exception as e:
       logger.error("unable to get rating")
       raise internalServerError()
-    
+
   def getCommentsByAlbumID(self, request):
     db = self.Database
     albumID = request.query_params.get('ID')
@@ -174,7 +187,7 @@ class SongService():
     except Exception as e:
       logger.error("unable to get comments")
       raise internalServerError()
-    
+
   def updateAlbumRating(self, data):
     db = self.Database
     try:
@@ -188,7 +201,7 @@ class SongService():
     except Exception as e:
       logger.error("unable to update rating")
       raise internalServerError()
-    
+
   def updateAlbumComment(self, data):
     db = self.Database
     try:
@@ -207,27 +220,37 @@ class SongService():
     db = self.Database
     username = request.query_params.get('username')
     try:
-      query = ("SELECT *\
-                FROM Song\
-                WHERE releaseDate > (SELECT lastlogin FROM user WHERE username = %s)\
+      query = ("SELECT *, artist.fname, artist.lname\
+                FROM song \
+                JOIN artistPerformsSong on artistPerformsSong.songID = song.songID\
+                JOIN artist on artist.artistID = artistPerformsSong.artistID\
+                WHERE artistPerformsSong.artistID in (\
+                    SELECT artistID FROM userFanOfArtist WHERE username = %s\
+                )\
+                AND releaseDate > (SELECT lastlogin FROM user WHERE username = %s)\
                 ORDER BY releaseDate DESC;")
-      values = (username,)
+      values = (username, username)
       queryResult = db.query(query, values)
       return queryResult['result']
     except Exception as e:
       logger.error("unable to get new song")
       raise internalServerError()
-    
+
   def getNewSongComment(self, request):
     db = self.Database
     username = request.query_params.get('username')
     try:
       query = ("SELECT *\
-                FROM ReviewSong\
-                WHERE reviewDate > (SELECT lastlogin FROM User WHERE username = %s)\
+                FROM reviewSong\
+                where username in (\
+                  select follows from follows where follows.follower = %s \
+                  union select user2 from friend where user1 = %s and acceptStatus = 'accepted' \
+                  union select user1 from friend where user2 = %s  and acceptStatus = 'accepted'\
+                )\
+                AND reviewDate > (SELECT lastlogin FROM `user` WHERE username = %s)\
                 AND username <> %s\
                 ORDER BY reviewDate DESC;")
-      values = (username, username,)
+      values = (username, username, username, username, username)
       queryResult = db.query(query, values)
       return queryResult['result']
     except Exception as e:
@@ -239,11 +262,16 @@ class SongService():
     username = request.query_params.get('username')
     try:
       query = ("SELECT *\
-                FROM ReviewAlbum\
-                WHERE reviewDate > (SELECT lastlogin FROM User WHERE username = %s)\
+                FROM reviewAlbum\
+                where username in (\
+                  select follows from follows where follows.follower = %s \
+                  union select user2 from friend where user1 = %s and acceptStatus = 'accepted' \
+                  union select user1 from friend where user2 = %s  and acceptStatus = 'accepted'\
+                )\
+                AND reviewDate > (SELECT lastlogin FROM `user` WHERE username = %s)\
                 AND username <> %s\
                 ORDER BY reviewDate DESC;")
-      values = (username, username,)
+      values = (username, username, username, username, username)
       queryResult = db.query(query, values)
       return queryResult['result']
     except Exception as e:

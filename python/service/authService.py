@@ -33,7 +33,7 @@ class AuthService():
     try:
       passwordBytes = user.password.encode('utf-8')
       hashedPassword = bcrypt.hashpw(passwordBytes, bcrypt.gensalt())
-      _ = db.query(("INSERT into "+ db.UserTable +" (userName, password, fName, lName) values (%s,%s,%s,%s)"), [
+      _ = db.query(("INSERT into "+ db.UserTable +" (username, password, fName, lName) values (%s,%s,%s,%s)"), [
         user.userName, hashedPassword, user.firstName, user.lastName
       ])
       return {
@@ -49,7 +49,7 @@ class AuthService():
   def login(self, loginData: LoginForm):
     db = self.Database
     try:
-      queryResult = db.query(("SELECT username, password, fName, lName, lastlogin, nickname FROM "+db.UserTable+" where userName = %s"), [loginData.userName])
+      queryResult = db.query(("SELECT username, password, fName, lName, lastlogin, nickname FROM "+db.UserTable+" where username = %s"), [loginData.userName])
       if len(queryResult['result']) != 1:
         raise userNotFound.UserNotFound()
       user = queryResult['result'][0]
@@ -86,12 +86,12 @@ class AuthService():
     db = self.Database
     try:
       queryResult = db.query(
-        ("SELECT username, fName, lName FROM "+db.UserTable+" where userName = %s"),
+        ("SELECT username, fName, lName FROM "+db.UserTable+" where username = %s"),
         [userName]
       )
       if (len(queryResult['result']) != 1):
         raise userNotFound.UserNotFound()
-      
+
       user = queryResult['result'][0]
       return user
     except Exception as e:

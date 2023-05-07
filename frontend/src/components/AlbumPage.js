@@ -45,7 +45,6 @@ const AlbumApge = () => {
 		try {
 			const response = await SongService.getCommentsByID(albumID, "album");
 			const data = response.data;
-			console.log(data)
 			setComments(data)
 		} catch (error) {
 			console.error("Failed to fetch song comments:", error);

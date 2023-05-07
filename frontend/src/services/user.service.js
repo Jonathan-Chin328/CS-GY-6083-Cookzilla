@@ -88,6 +88,39 @@ const getFriendStatus = (username, friendName) => {
   }); 
 }
 
+const getMyFollowList = (username) => {
+  let params = {
+		username: username
+  }
+  return axios.get(API_URL + "getMyFollow", {
+    headers: authHeader(),
+    params: params
+  });
+}
+
+const getMyFollowStatus = (username, friendName) => {
+  let params = {
+    username: username,
+		friendName: friendName
+  }
+  return axios.get(API_URL + "myFollowStatus", {
+    headers: authHeader(),
+    params: params
+  }); 
+}
+
+const updateMyFollowStatus = (username, friendName, action) => {
+  let params = {
+    username: username,
+		friendName: friendName,
+    action: action
+  }
+  return axios.get(API_URL + "updateMyFollow", {
+    headers: authHeader(),
+    params: params
+  }); 
+}
+
 const getFollowingStatus = (username, artistID) => {
   let params = {
     username: username,
@@ -155,6 +188,16 @@ const getNotices = (username) => {
   }); 
 }
 
+const getInterestList = (username) => {
+  let params = {
+    username: username,
+  }
+  return axios.get(API_URL + "interests", {
+    headers: authHeader(),
+    params: params
+  });
+}
+
 const UserService = {
   getUserBoard,
   getUserPlaylists,
@@ -168,7 +211,11 @@ const UserService = {
   getFollowingStatus,
   updateFriend,
   updateFollowing,
-  getNotices
+  getNotices,
+  getInterestList,
+  getMyFollowStatus,
+  updateMyFollowStatus,
+  getMyFollowList,
 };
 
 export default UserService;

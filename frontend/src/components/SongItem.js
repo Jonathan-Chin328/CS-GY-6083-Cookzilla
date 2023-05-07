@@ -26,9 +26,7 @@ const SongItem = ({ songItem }) => {
   }, [songItem])
 
   useEffect(() => {
-    if (currentUser) {
-      fetchPlaylists();
-    }
+    fetchPlaylists();
   }, [showModal]);
 
   const getSong = (songID) => {
@@ -54,7 +52,7 @@ const SongItem = ({ songItem }) => {
 
   const fetchPlaylists = () => {
     // Fetch user playlists when the component mounts
-    UserService.getUserPlaylists(currentUser.username)
+    UserService.getUserPlaylists(currentUser?.username)
       .then(response => {
         setPlaylists(response.data);
         if (response.data.length > 0) {
@@ -78,43 +76,38 @@ const SongItem = ({ songItem }) => {
   }
 
   const addToPlaylist = (event) => {
-    if (currentUser) {
-      if (selectedPlaylist !== '') {
-        SongService.addSongToPlaylist(selectedPlaylist.playlistID, songID)
-        setShowModal(!showModal);
-      } else {
-        // check newPlaylistName
-        if (newPlaylist !== '') {
-          // add new playlist
-          SongService.addPlaylist(currentUser.username, newPlaylist)
-            .then(response => {
-              // add to playlist if succeed
-              const data = response.data
-              if (data.playlistID === null) {
-                alert("The playlist already exist!")
-              } else {
-                SongService.addSongToPlaylist(data.playlistID, songID)
-                setShowModal(!showModal);
-              }
-            })
-            .catch(error => {
-              console.log(error)
-            })
-        } else {
-          alert("Please enter the playlist name")
-        }
-      }
+    console.log('add to playlist')
+    if (selectedPlaylist !== '') {
+      SongService.addSongToPlaylist(selectedPlaylist.playlistID, songID)
+      setShowModal(!showModal);
     } else {
-      alert("login to add playlist!")
+      // check newPlaylistName
+      if (newPlaylist !== '') {
+        // add new playlist
+        SongService.addPlaylist(currentUser?.username, newPlaylist)
+          .then(response => {
+            // add to playlist if succeed
+            const data = response.data
+            if (data.playlistID === null) {
+              alert("The playlist already exist!")
+            } else {
+              SongService.addSongToPlaylist(data.playlistID, songID)
+              setShowModal(!showModal);
+            }
+          })
+          .catch(error => {
+            console.log(error)
+          })
+      }
     }
   }
 
   const randomImage = () => {
     if (artist === 'Ed Sheeran') {
-      return "song_pictures/song_3.jpeg";
+      return "/song_pictures/song_3.jpeg";
     }
     const randomNumber = Math.floor(Math.random() * 10) + 1;
-    return "song_pictures/song_" + randomNumber + ".jpeg";
+    return "/song_pictures/song_" + randomNumber + ".jpeg";
   }
 
   return (

@@ -130,14 +130,7 @@ const Register = () => {
           setSuccessful(true);
         },
         (error) => {
-          const resMessage =
-            (error.response &&
-              error.response.data &&
-              error.response.data.error &&
-              error.response.data.error.info) ||
-            error.message ||
-            error.toString();
-
+          const resMessage = error.response.data.info
           setMessage(resMessage);
           setSuccessful(false);
         }

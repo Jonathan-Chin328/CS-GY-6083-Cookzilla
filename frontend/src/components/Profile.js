@@ -4,7 +4,7 @@ import AuthService from "../services/auth.service";
 import UserService from "../services/user.service";
 import SongService from "../services/song.service";
 import SongList from "./SongList";
-import { UserModal, ArtistModal } from "./Modal";
+import { UserModal, ArtistModal, FollowModal } from "./Modal";
 import { Heap } from 'heap-js';
 import moment from "moment";
 
@@ -14,6 +14,8 @@ const Profile = () => {
   const [selectedPlaylist, setSelectedPlaylist] = useState(null);
   const [songList, setSongList] = useState([]);
   const [selectComponent, setSelectComponent] = useState(window.location.hash)
+  // interest
+  const [interestsList, setInterestsList] = useState([])
   // friend
   const [friendsList, setFriendsList] = useState([])
   const [followingList, setFollowingList] = useState([])
@@ -22,6 +24,10 @@ const Profile = () => {
   const [userList, setUserList] = useState([])
   const [selectUser, setSelectUser] = useState("")
   // following
+  const [myFollowsList, setmyFollowsList] = useState([])
+  const [myFollowingList, setMyFollowingList] = useState([])
+  const [selecFollow, setSelecFollow] = useState("")
+  // fanOfArtist
   const [searchArtistQuery, setSearchArtistQuery] = useState('')
   const [artistList, setArtistList] = useState([])
   const [selectArtist, setSelectArtist] = useState("")
@@ -38,9 +44,15 @@ const Profile = () => {
     if (selectComponent === "#playlist" || selectComponent === "") {
       fetchPlaylists();
     }
+    if (selectComponent === "#interest") {
+      fetchInterest();
+    }
     if (selectComponent === "#friends") {
       fetchFriendsList();
     } else if (selectComponent === "#following") {
+      fetchMyFollowList()
+    }
+    if (selectComponent === "#fanOfArtist") {
       fetchFollowingList()
     }
     fetchNotices()
@@ -85,6 +97,16 @@ const Profile = () => {
     const selectedPlaylist = playlists.find(playlist => playlist.playlistID === playlistID);
     setSelectedPlaylist(selectedPlaylist);
   }
+  // interest
+  const fetchInterest = () => {
+    UserService.getInterestList(currentUser.username)
+    .then(response => {
+      setInterestsList(response.data)
+    })
+    .catch(error => {
+      console.log(error);
+    })
+  }
 
   // friends
   const fetchFriendsList = () => {
@@ -112,6 +134,16 @@ const Profile = () => {
     UserService.getFollowingList(currentUser.username)
     .then(response => {
       setFollowingList(response.data)
+    })
+    .catch(error => {
+      console.log(error);
+    })
+  }
+
+  const fetchMyFollowList = () => {
+    UserService.getMyFollowList(currentUser.username)
+    .then(response => {
+      setmyFollowsList(response.data)
     })
     .catch(error => {
       console.log(error);
@@ -232,6 +264,59 @@ const Profile = () => {
     )
   }
 
+  const renderInterestContent = () => {
+    // setInterestsList(
+    //   [
+    //     {'type': 'songList', 'list': [{'songID': 1}, {'songID': 2}]},
+    //     {'type': 'review', 'content': 'this is a review'},
+    //   ]
+    // )
+    // let mock = [
+    //   {'type': 'songList', 'username': 'rachel', 'list': [{'songID': 1}, {'songID': 2}]},
+    //   {'type': 'review', 'username': 'rachel', 'content': 'this is a review', 'songID': 2, 'date': '2023-05-03T16:32:47'},
+    //   {'type': 'review', 'username': 'rachel', 'content': 'this is a review', 'songID': 2, 'date': '2023-05-03T16:32:47'},
+    // ]
+    return (
+      <div>
+        <h4>Interest Recommand</h4>
+        <div className="row mt-3">
+          <div className="col-md-6">
+              {interestsList.length === 0 ? (
+                <p className="no-list">No real time data yet</p>
+              ) : (
+                <p className="no-list">recommended by the system</p>
+              )}
+          </div>
+        </div>
+        <div>
+          {
+           interestsList.map(item=>(
+            item.type === "songList" ? (
+              <div>
+                <SongList songs={item.list} title={"user like it ❤️"}/>
+              </div> ) : (
+                item.type === "review" ? (
+                  <div style={{marginBottom: '15px'}}> 
+                    <p className="mb-1">{item.username} post review 📩</p>
+                    <Link to={`/song/${item.songID}`} key={item.date} className="list-group-item list-group-item-action flex-column align-items-start">
+                      <div className="d-flex w-100 justify-content-between">
+                        <small className="text-muted">{moment(item.date).fromNow()}</small>
+                      </div>
+                      <p className="mb-1">{item.content.substring(0, 200) + (item.content.length > 200 ? '...' : '')}</p>
+                    </Link>
+                  </div>
+                  ) : (
+                  <></>
+                  )
+              )
+           ))
+          }
+          
+        </div>
+      </div>
+    )
+  }
+
   const renderFriendsContent = () => {
     return (
       <div>
@@ -280,10 +365,10 @@ const Profile = () => {
     );
   }
 
-  const renderFollowingContent = () => {
+  const renderFanOfArtistContent = () => {
     return (
       <div>
-        <h4>Following</h4>
+        <h4>FanOfArtist</h4>
         <div className="row mt-3">
           <div className="col-md-6">
             {followingList.length === 0 ? (
@@ -338,6 +423,54 @@ const Profile = () => {
     );
   }
 
+  const renderFollowingContent = () => {
+    return (
+      <div>
+        <h4>My Following</h4>
+        <div className="row mt-3">
+          <div className="col-md-6">
+            {myFollowsList.length === 0 ? (
+              <p className="no-list">Get some follow user!</p>
+            ) : (
+              <ul className="list-group list-group-flush">
+                {myFollowsList.map(friend => (
+                  <li key={friend.username} className="list-group-item" onClick={() => {setSelecFollow(friend.username)}}>
+                    {friend.username}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <div className="col-md-6 justify-content-end">
+            <form className="form-inline">
+              <input 
+                value={searchUserQuery}
+                onChange={(e) => setSearchUserQuery(e.target.value)} 
+                className="form-control mr-sm-3 flex-grow-1" 
+                type="search" 
+                placeholder="Search User" 
+                aria-label="Search"/>
+              <button onClick={fetchUserList} className="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+            </form>
+            <div className="row mt-3"></div>
+            {userList.length !== 0 ? (
+              <button type="button" className="close" aria-label="Close" onClick={() => {setUserList([])}}>
+                  <span aria-hidden="true">&times;</span>
+              </button>
+            ) : (<div></div>)}
+            <ul className="list-group list-group-flush">
+              {userList.map(user => (
+                <li key={user.username} className="list-group-item" onClick={() => {setSelecFollow(user.username)}}>
+                  {user.username}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const renderNoticesContent = () => {
     return (
       <div>
@@ -352,13 +485,13 @@ const Profile = () => {
                       <h5 className="mb-1">New Song</h5>
                       <small className="text-muted">{moment(notice.notice.date).fromNow()}</small>
                     </div>
-                    <p className="mb-1">Artist released {notice.notice.title}.</p>
+                    <p className="mb-1">{notice.notice.fname + ' ' + notice.notice.lname} released {notice.notice.title}.</p>
                     <small className="text-muted">{' '}</small>
                   </Link>
               )
               case 'newAlbumComment': 
                 return (
-                <Link to={`/album/${notice.notice.albumID}`} key={notice.notice.date} className="list-group-item list-group-item-action flex-column align-items-start">
+                <Link to={`/song/${notice.notice.songID}`} key={notice.notice.date} className="list-group-item list-group-item-action flex-column align-items-start">
                   <div className="d-flex w-100 justify-content-between">
                     <h5 className="mb-1">New Review</h5>
                     <small className="text-muted">{moment(notice.notice.date).fromNow()}</small>
@@ -382,10 +515,10 @@ const Profile = () => {
                 return (
                 <a className="list-group-item list-group-item-action flex-column align-items-start" key={notice.notice.date} onClick={() => {setSelectUser(notice.notice.requestSentBy)}}>
                   <div className="d-flex w-100 justify-content-between">
-                    <h5 className="mb-1">Friend request </h5>
+                    <h5 className="mb-1">{notice.notice.acceptStatus === 'Pending' ? 'Friend request' : 'New Friend'} </h5>
                     <small className="text-muted">{moment(notice.notice.date).fromNow()}</small>
                   </div>
-                  <p className="mb-1">{notice.notice.requestSentBy} send you a friend request.</p>
+                  <p className="mb-1">{currentUser.username === notice.notice.requestSentBy ? notice.notice.user2 : notice.notice.user1} {notice.notice.acceptStatus === 'Pending' ? 'send you a friend request.' : 'and you have been friend!'}</p>
                   <small className="text-muted">{' '}</small>
                 </a>
               )
@@ -443,10 +576,14 @@ const Profile = () => {
     switch (selectComponent) {
       case "#playlist":
         return renderPlaylistContent();
+      case "#interest":
+        return renderInterestContent();
       case "#friends":
         return renderFriendsContent();
       case "#following":
-        return renderFollowingContent();
+          return renderFollowingContent();
+      case "#fanOfArtist":
+        return renderFanOfArtistContent();
       case "#notices":
         return renderNoticesContent();
       case "#upload":
@@ -482,12 +619,18 @@ const Profile = () => {
               <a className="nav-link nav-link-custom" href="#playlist" onClick={() => {setSelectComponent("#playlist")}}>
                 Playlists
               </a>
+              <a className="nav-link nav-link-custom" href="#interest" onClick={() => {setSelectComponent("#interest")}}>
+                interest
+              </a>
               <a className="nav-link nav-link-custom" href="#friends" onClick={() => {setSelectComponent("#friends")}}>
                 Friends
               </a>
               <a className="nav-link nav-link-custom" href="#following" onClick={() => {setSelectComponent("#following")}}>
                 Following
               </a>
+              <a className="nav-link nav-link-custom" href="#fanOfArtist" onClick={() => {setSelectComponent("#fanOfArtist")}}>
+                fanOfArtist
+              </a> 
               <a className="nav-link nav-link-custom d-flex justify-content-between align-items-center" href="#notices" onClick={() => {setSelectComponent("#notices")}}>
                 Notices
                 <span className="badge badge-primary badge-pill">{notices.length}</span>
@@ -513,6 +656,20 @@ const Profile = () => {
             />
           </>
       )}
+
+      {
+        selecFollow && (
+          <>
+           <div className="modal-backdrop fade show"></div>
+            <FollowModal
+              username={selecFollow}
+              onClose={() => {setSelecFollow("")}}
+              fetchFriendsList={fetchMyFollowList}
+            />
+          </>
+        )
+      }
+
     </div>
   );
   

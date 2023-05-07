@@ -6,13 +6,30 @@ const HomePage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [songList, setSongList] = useState([]);
   const [genre, setGenre] = useState("");
+  const [genreList, setGenreList] = useState([]);
   const [minRating, setMinRating] = useState(0);
   const [searchType, setSearchType] = useState("song");
 
   useEffect(() => {
     // Fetch recommended songs on component mount
     fetchSongList();
+    fetchGenreList();
   }, []);
+
+  const fetchGenreList = () => {
+    // Fetch genre list from backend API
+    const fetchGenres = async () => {
+      try {
+        const response = await SongService.getGenres();
+        console.log(response.data);
+        setGenreList(response.data);
+      } catch (error) {
+        console.error("Failed to fetch genres:", error);
+      }
+    };
+
+    fetchGenres();
+  }
 
   const fetchSongList = () => {
     // Fetch recommended songs from backend API
@@ -66,13 +83,18 @@ const HomePage = () => {
             className="form-control"
             >
             <option value="">All</option>
-            <option value="pop">Pop</option>
+            {
+              genreList.map((genre) => (
+                <option key={genre.genre} value={genre.genre}>{genre.genre}</option>
+              ))
+            }
+            {/* <option value="pop">Pop</option>
             <option value="rock">Rock</option>
             <option value="hip-hop">Hip Hop</option>
             <option value="electronic">Electronic</option>
             <option value="Jazz">Jazz</option>
             <option value="Country">Country</option>
-            <option value="Soul">Soul</option>
+            <option value="Soul">Soul</option> */}
             </select>
             <select
             id="minRatingSelect"

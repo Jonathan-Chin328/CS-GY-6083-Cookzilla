@@ -58,7 +58,7 @@ async def loginHandler(loginData: authService.LoginForm):
         if not isinstance(e, ExtendableError):
             raise InternalServerError()
         raise e
-    
+
 # get songList according to condition
 @app.get("/songs")
 async def getSongs(request: Request):
@@ -69,7 +69,7 @@ async def getSongs(request: Request):
         if not isinstance(e, ExtendableError):
             raise InternalServerError()
         raise e
-    
+
 # get song information from songID
 @app.get("/song")
 async def getSong(request: Request):
@@ -80,7 +80,18 @@ async def getSong(request: Request):
         if not isinstance(e, ExtendableError):
             raise InternalServerError()
         raise e
-    
+
+@app.get("/genres")
+async def getGenre(request: Request):
+    try:
+        genre = SongService.getGenre()
+        return genre
+    except Exception as e:
+        if not isinstance(e, ExtendableError):
+            raise InternalServerError()
+        raise e
+
+
 # get song rating from songID & albumID
 @app.get("/rating")
 async def getRating(request: Request):
@@ -95,7 +106,7 @@ async def getRating(request: Request):
         if not isinstance(e, ExtendableError):
             raise InternalServerError()
         raise e
-    
+
 # get song comments from songID
 @app.get("/comments")
 async def getRating(request: Request):
@@ -110,7 +121,7 @@ async def getRating(request: Request):
         if not isinstance(e, ExtendableError):
             raise InternalServerError()
         raise e
-    
+
 # get song from albumID
 @app.get("/album")
 async def getAlbum(request: Request):
@@ -121,7 +132,7 @@ async def getAlbum(request: Request):
         if not isinstance(e, ExtendableError):
             raise InternalServerError()
         raise e
-    
+
 # get user from username
 @app.get("/user")
 async def getUser(request: Request):
@@ -132,7 +143,7 @@ async def getUser(request: Request):
         if not isinstance(e, ExtendableError):
             raise InternalServerError()
         raise e
-    
+
 # get artist from artistID
 @app.get("/artist")
 async def getArtist(request: Request):
@@ -147,7 +158,8 @@ async def getArtist(request: Request):
 @app.middleware("http")
 async def AuthMiddleWare(request: Request, call_next):
     try:
-        if(request.url.path not in ['/signup', '/login', '/logout', '/songs', '/song', '/rating', '/comments', '/album', '/user', '/artist', '/rate', '/comment', '/user_playlist', '/playlist', '/addPlaylist', "/addSongToPlaylist", "/friends", "/following", "/users", "/artists", "/friendStatus", "/followingStatus", "/updateFriend", "/updateFollowing", "/uploadSong", "/notices"]):
+        if(request.url.path not in ['/signup', '/login', '/logout', '/songs', '/song', '/rating', '/comments', '/album', '/user', '/artist', '/rate', '/comment', '/user_playlist', '/playlist', '/addPlaylist', "/addSongToPlaylist", "/friends", "/following", "/users", "/artists", "/friendStatus", "/followingStatus", "/updateFriend",
+                                    "/updateFollowing", "/uploadSong", "/notices", "/interests", "/genres","/getMyFollow", "/updateMyFollow", '/myFollowStatus']):
         # if(request.url.path not in ['/signup', '/login', '/songs', '/song', '/rating', '/comments', '/album', '/user', '/artist']):
             authHeader = request.headers.get('Authorization')
             print('authHeader', authHeader)
@@ -172,7 +184,7 @@ async def AuthMiddleWare(request: Request, call_next):
             status_code=int(e.code),
             content={'info': e.info, 'code': int(e.code), 'name': e.name}
         )
-    
+
 @app.post("/logout")
 async def logoutHandler(request: Request):
     try:
@@ -184,7 +196,7 @@ async def logoutHandler(request: Request):
         if not isinstance(e, ExtendableError):
             raise InternalServerError()
         raise e
-        
+
 @app.get("/user")
 async def getUser(request: Request):
     try:
@@ -195,7 +207,7 @@ async def getUser(request: Request):
         if not isinstance(e, ExtendableError):
             raise InternalServerError()
         raise e
-    
+
 @app.get("/user_playlist")
 async def getUserPlaylist(request: Request):
     try:
@@ -205,7 +217,7 @@ async def getUserPlaylist(request: Request):
         if not isinstance(e, ExtendableError):
             raise InternalServerError()
         raise e
-    
+
 @app.get("/playlist")
 async def getSongsByPlaylist(request: Request):
     try:
@@ -215,7 +227,7 @@ async def getSongsByPlaylist(request: Request):
         if not isinstance(e, ExtendableError):
             raise InternalServerError()
         raise e
-    
+
 # add or update rating for song & album
 @app.post("/rate")
 async def updateRating(request: Request):
@@ -230,7 +242,7 @@ async def updateRating(request: Request):
         if not isinstance(e, ExtendableError):
             raise InternalServerError()
         raise e
-    
+
 # add comment for song & album
 @app.post("/comment")
 async def updateComment(request: Request):
@@ -245,7 +257,7 @@ async def updateComment(request: Request):
         if not isinstance(e, ExtendableError):
             raise InternalServerError()
         raise e
-    
+
 # add comment for song & album
 @app.post("/addPlaylist")
 async def addPlaylist(request: Request):
@@ -262,7 +274,7 @@ async def addPlaylist(request: Request):
         if not isinstance(e, ExtendableError):
             raise InternalServerError()
         raise e
-    
+
 # add comment for song & album
 @app.post("/addSongToPlaylist")
 async def addSongToPlaylist(request: Request):
@@ -274,7 +286,7 @@ async def addSongToPlaylist(request: Request):
         if not isinstance(e, ExtendableError):
             raise InternalServerError()
         raise e
-    
+
 # get friends by user
 @app.get("/friends")
 async def getFriendsList(request: Request):
@@ -286,7 +298,42 @@ async def getFriendsList(request: Request):
         if not isinstance(e, ExtendableError):
             raise InternalServerError()
         raise e
-    
+
+@app.get("/getMyFollow")
+async def getMyFollow(request: Request):
+    try:
+        follow = UserService.getMyFollow(request)
+        return follow
+    except Exception as e:
+        if not isinstance(e, ExtendableError):
+            raise InternalServerError()
+        raise e
+
+@app.get("/myFollowStatus")
+async def myFollowStatus(request: Request):
+    try:
+        follow = UserService.getMyFollowStatus(request)
+        return follow
+    except Exception as e:
+        if not isinstance(e, ExtendableError):
+            raise InternalServerError()
+
+@app.get("/updateMyFollow")
+async def updateMyFollow(request: Request):
+    try:
+        data = {
+            "username": request.query_params['username'],
+            "friendName": request.query_params['friendName'],
+            "action": int(request.query_params['action']),
+        }
+        UserService.updateMyFollow(data)
+        return {"message": "updateFollowing success"}
+
+    except Exception as e:
+        if not isinstance(e, ExtendableError):
+            raise InternalServerError()
+        raise e
+
 # get following by user
 @app.get("/following")
 async def getFollowingList(request: Request):
@@ -308,7 +355,7 @@ async def getUserList(request: Request):
         if not isinstance(e, ExtendableError):
             raise InternalServerError()
         raise e
-    
+
 # get artistList by username
 @app.get("/artists")
 async def getArtistList(request: Request):
@@ -319,7 +366,18 @@ async def getArtistList(request: Request):
         if not isinstance(e, ExtendableError):
             raise InternalServerError()
         raise e
-    
+
+@app.get("/interests")
+async def getInterests(request: Request):
+    try:
+        interests = UserService.getInterests(request)
+        print(interests)
+        return interests
+    except Exception as e:
+        if not isinstance(e, ExtendableError):
+            raise InternalServerError()
+        raise e
+
 # get friends Status
 @app.get("/friendStatus")
 async def getFriendStatus(request: Request):
@@ -330,7 +388,7 @@ async def getFriendStatus(request: Request):
         if not isinstance(e, ExtendableError):
             raise InternalServerError()
         raise e
-    
+
 # get gollowing Status
 @app.get("/followingStatus")
 async def getFollowingStatus(request: Request):
@@ -341,7 +399,7 @@ async def getFollowingStatus(request: Request):
         if not isinstance(e, ExtendableError):
             raise InternalServerError()
         raise e
-    
+
 # update Friend
 @app.post("/updateFriend")
 async def updateFriend(request: Request):
@@ -371,7 +429,7 @@ async def updateFriend(request: Request):
         if not isinstance(e, ExtendableError):
             raise InternalServerError()
         raise e
-    
+
 # get notices
 @app.get("/notices")
 async def getNotices(request: Request):
@@ -395,7 +453,7 @@ async def getNotices(request: Request):
         if not isinstance(e, ExtendableError):
             raise InternalServerError()
         raise e
-    
+
 # uploadSong
 @app.post("/uploadSong")
 async def updateFriend(request: Request):
@@ -436,4 +494,4 @@ async def exceptionHandler(request: Request, exc: ExtendableError):
 
 if __name__ == "__main__":
     # uvicorn.run(app, host="0.0.0.0", port=int(os.environ['PORT']))
-    uvicorn.run("main:app", host="0.0.0.0", port=int(os.environ['PORT']), reload=True, workers=1, loop="asyncio")  # Enable debug mode for auto-reloading
+    uvicorn.run("main:app", host="0.0.0.0", port=int(os.getenv('PORT', 3000)), reload=True, workers=1, loop="asyncio")  # Enable debug mode for auto-reloading

@@ -8,6 +8,13 @@ const getHitSong = () => {
 	return getSongs(params)
 }
 
+const getGenres = () => {
+  const params = {}
+  return axios.get(API_URL + "genres", {
+    params: params
+  });
+}
+
 const getSongs = (params) => {
   return axios.get(API_URL + "songs", { 
     headers: authHeader(),
@@ -143,7 +150,8 @@ const SongService = {
 	getSongByPlaylistID,
 	addPlaylist,
 	addSongToPlaylist,
-  uploadSong
+  uploadSong,
+  getGenres,
 };
 
 export default SongService;
